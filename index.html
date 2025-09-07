@@ -3,12 +3,376 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的第一个Vercel网站</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>🐍 卡通贪吃蛇 🍎</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
+
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #FFF5E6;
+            font-family: 'Comic Neue', cursive;
+            background-image:
+                linear-gradient(#FFEEEE 1px, transparent 1px),
+                linear-gradient(90deg, #FFEEEE 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        h1 {
+            color: #FF6B6B;
+            text-shadow: 3px 3px 0 #FFE66D;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .game-container {
+            position: relative;
+            margin: 20px 0;
+        }
+
+        canvas {
+            border: 4px solid #FF9E7D;
+            border-radius: 15px;
+            background-color: #FFF;
+            box-shadow: 0 10px 20px rgba(255, 105, 97, 0.2);
+        }
+
+        .score-display {
+            font-size: 1.8rem;
+            color: #4ECDC4;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            font-family: 'Comic Neue', cursive;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn:active::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        #startBtn {
+            background-color: #4ECDC4;
+            color: white;
+        }
+
+        #startBtn:hover {
+            background-color: #3DBEB5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(78, 205, 196, 0.3);
+        }
+
+        #pauseBtn {
+            background-color: #FF9E7D;
+            color: white;
+        }
+
+        #pauseBtn:hover {
+            background-color: #FF8E6B;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 158, 125, 0.3);
+        }
+
+        .instructions {
+            margin-top: 20px;
+            color: #FF9E7D;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .snake-emoji {
+            font-size: 1.5rem;
+            animation: bounce 0.5s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello, Vercel! 🚀</h1>
-    <p>这是我的网站成功部署在 Vercel 上啦！</p>
-    <img src="images/logo.png" alt="Logo" width="150">
+<h1>🐍 卡通贪吃蛇游戏 🍎</h1>
+
+<div class="score-display">
+    得分: <span id="score">0</span>
+    <span class="snake-emoji">🐍</span>
+</div>
+
+<div class="game-container">
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+</div>
+
+<div class="controls">
+    <button id="startBtn" class="btn">开始游戏</button>
+    <button id="pauseBtn" class="btn">暂停游戏</button>
+</div>
+
+<div class="instructions">
+    使用方向键 <span style="color:#4ECDC4">↑ ↓ ← →</span> 或 <span style="color:#FF6B6B">W A S D</span> 控制小蛇
+</div>
+
+<script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+
+        const box = 20; // 每个方格的大小
+        let snake = [{x: 9 * box, y: 10 * box}]; // 初始蛇的位置
+        let food = {
+            x: Math.floor(Math.random() * 20) * box,
+            y: Math.floor(Math.random() * 20) * box,
+            type: Math.random() > 0.7 ? '🍎' : '🍒' // 随机食物类型
+        };
+        let direction = null;
+        let game;
+        let score = 0;
+        let isPaused = false;
+        let gameStarted = false;
+        let growth = 0; // 用于蛇身增长的动画
+
+        // 绘制游戏区域
+        function drawGame() {
+            // 清空画布
+            ctx.fillStyle = "#FFF";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制网格线
+            ctx.strokeStyle = "#FFEEEE";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < canvas.width; i += box) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // 绘制蛇
+            for (let i = 0; i < snake.length; i++) {
+                const segment = snake[i];
+                const size = box - 2;
+                const posX = segment.x + 1;
+                const posY = segment.y + 1;
+
+                // 蛇头
+                if (i === 0) {
+                    ctx.fillStyle = "#FF6B6B";
+                    ctx.beginPath();
+                    ctx.roundRect(posX, posY, size, size, [0, 0, 8, 8]);
+                    ctx.fill();
+
+                    // 蛇眼睛
+                    ctx.fillStyle = "white";
+                    ctx.beginPath();
+                    ctx.arc(posX + 5, posY + 5, 3, 0, Math.PI * 2);
+                    ctx.arc(posX + size - 5, posY + 5, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = "#333";
+                    ctx.beginPath();
+                    ctx.arc(posX + 5, posY + 5, 1.5, 0, Math.PI * 2);
+                    ctx.arc(posX + size - 5, posY + 5, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                // 蛇身
+                else {
+                    const progress = Math.min(1, growth / 5);
+                    const animatedSize = size * progress;
+                    const offset = (size - animatedSize) / 2;
+
+                    ctx.fillStyle = i % 2 === 0 ? "#4ECDC4" : "#FFD166";
+                    ctx.beginPath();
+                    ctx.roundRect(
+                        posX + offset,
+                        posY + offset,
+                        animatedSize,
+                        animatedSize,
+                        5
+                    );
+                    ctx.fill();
+                }
+            }
+
+            // 绘制食物
+            ctx.font = `${box}px Arial`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(food.type, food.x + box/2, food.y + box/2);
+
+            // 显示分数
+            scoreElement.textContent = score;
+        }
+
+        // 游戏主逻辑
+        function gameLoop() {
+            if (isPaused || !gameStarted) return;
+
+            // 移动蛇
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if (direction === "LEFT") snakeX -= box;
+            if (direction === "UP") snakeY -= box;
+            if (direction === "RIGHT") snakeX += box;
+            if (direction === "DOWN") snakeY += box;
+
+            // 检查是否吃到食物
+            if (snakeX === food.x && snakeY === food.y) {
+                score++;
+                growth = 5; // 开始增长动画
+                food = {
+                    x: Math.floor(Math.random() * 20) * box,
+                    y: Math.floor(Math.random() * 20) * box,
+                    type: Math.random() > 0.7 ? '🍎' : ['🍒', '🍓', '🍑'][Math.floor(Math.random() * 3)]
+                };
+            } else {
+                // 如果没有吃到食物，移除蛇尾
+                if (growth <= 0) {
+                    snake.pop();
+                } else {
+                    growth--;
+                }
+            }
+
+            // 添加新的蛇头
+            const newHead = {x: snakeX, y: snakeY};
+            snake.unshift(newHead);
+
+            // 检查游戏结束条件
+            if (
+                snakeX < 0 || snakeY < 0 ||
+                snakeX >= canvas.width || snakeY >= canvas.height ||
+                collision(newHead, snake)
+            ) {
+                clearInterval(game);
+                setTimeout(() => {
+                    alert(`游戏结束！你的得分是: ${score}\n\n🐍 小蛇说: "我还要吃更多水果!"`);
+                    resetGame();
+                }, 100);
+            }
+
+            drawGame();
+        }
+
+        // 检查碰撞
+        function collision(head, array) {
+            for (let i = 1; i < array.length; i++) {
+                if (head.x === array[i].x && head.y === array[i].y) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 重置游戏
+        function resetGame() {
+            snake = [{x: 9 * box, y: 10 * box}];
+            food = {
+                x: Math.floor(Math.random() * 20) * box,
+                y: Math.floor(Math.random() * 20) * box,
+                type: Math.random() > 0.7 ? '🍎' : '🍒'
+            };
+            direction = null;
+            score = 0;
+            gameStarted = false;
+            isPaused = false;
+            drawGame();
+            startBtn.textContent = "开始游戏";
+            pauseBtn.textContent = "暂停游戏";
+        }
+
+        // 键盘控制
+        document.addEventListener('keydown', (event) => {
+            if (!gameStarted) return;
+
+            const key = event.key;
+            if (key === "ArrowLeft" || key === "a" || key === "A") {
+                if (direction !== "RIGHT") direction = "LEFT";
+            } else if (key === "ArrowUp" || key === "w" || key === "W") {
+                if (direction !== "DOWN") direction = "UP";
+            } else if (key === "ArrowRight" || key === "d" || key === "D") {
+                if (direction !== "LEFT") direction = "RIGHT";
+            } else if (key === "ArrowDown" || key === "s" || key === "S") {
+                if (direction !== "UP") direction = "DOWN";
+            }
+        });
+
+        // 按钮控制
+        startBtn.addEventListener('click', () => {
+            if (!gameStarted) {
+                gameStarted = true;
+                game = setInterval(gameLoop, 150);
+                startBtn.textContent = "重新开始";
+                document.querySelector('.snake-emoji').style.animation = 'bounce 0.5s infinite alternate';
+            } else {
+                clearInterval(game);
+                resetGame();
+                document.querySelector('.snake-emoji').style.animation = 'none';
+            }
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            if (!gameStarted) return;
+
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? "继续游戏" : "暂停游戏";
+            document.querySelector('.snake-emoji').style.animation = isPaused ? 'none' : 'bounce 0.5s infinite alternate';
+        });
+
+        // 初始化游戏
+        drawGame();
+    </script>
 </body>
-</html> 
+</html>
