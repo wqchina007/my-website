@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -164,19 +164,19 @@
         const startBtn = document.getElementById('startBtn');
         const pauseBtn = document.getElementById('pauseBtn');
 
-        const box = 20; // 每个方格的大小
-        let snake = [{x: 9 * box, y: 10 * box}]; // 初始蛇的位置
+        const box = 20; // Size of each grid square
+        let snake = [{x: 9 * box, y: 10 * box}]; // Initial snake position
         let food = {
             x: Math.floor(Math.random() * 20) * box,
             y: Math.floor(Math.random() * 20) * box,
-            type: Math.random() > 0.7 ? '🍎' : '🍒' // 随机食物类型
+            type: Math.random() > 0.7 ? '🍎' : '🍒' // Random food type
         };
         let direction = null;
         let game;
         let score = 0;
         let isPaused = false;
         let gameStarted = false;
-        let growth = 0; // 用于蛇身增长的动画
+        let growth = 0; // Animation for snake body growth
 
         // 绘制游戏区域
         function drawGame() {
@@ -271,7 +271,7 @@
             // 检查是否吃到食物
             if (snakeX === food.x && snakeY === food.y) {
                 score++;
-                growth = 5; // 开始增长动画
+                growth = 5; // Start growth animation
                 food = {
                     x: Math.floor(Math.random() * 20) * box,
                     y: Math.floor(Math.random() * 20) * box,
@@ -354,7 +354,7 @@
             if (!gameStarted) {
                 gameStarted = true;
                 game = setInterval(gameLoop, 150);
-                startBtn.textContent = "重新开始";
+                startBtn.textContent = "Restart Game";
                 document.querySelector('.snake-emoji').style.animation = 'bounce 0.5s infinite alternate';
             } else {
                 clearInterval(game);
