@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐍 卡通贪吃蛇 🍎</title>
+    <title>🐍 Cartoon Snake 🍎</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap');
 
@@ -137,10 +137,10 @@
     </style>
 </head>
 <body>
-<h1>🐍 卡通贪吃蛇游戏 🍎</h1>
+<h1>🐍 Cartoon Snake Game 🍎</h1>
 
 <div class="score-display">
-    得分: <span id="score">0</span>
+    Score: <span id="score">0</span>
     <span class="snake-emoji">🐍</span>
 </div>
 
@@ -149,12 +149,12 @@
 </div>
 
 <div class="controls">
-    <button id="startBtn" class="btn">开始游戏</button>
-    <button id="pauseBtn" class="btn">暂停游戏</button>
+    <button id="startBtn" class="btn">Start Game</button>
+    <button id="pauseBtn" class="btn">Pause Game</button>
 </div>
 
 <div class="instructions">
-    使用方向键 <span style="color:#4ECDC4">↑ ↓ ← →</span> 或 <span style="color:#FF6B6B">W A S D</span> 控制小蛇
+    Use arrow keys <span style="color:#4ECDC4">↑ ↓ ← →</span> or <span style="color:#FF6B6B">W A S D</span> to control the snake
 </div>
 
 <script>
@@ -298,7 +298,7 @@
             ) {
                 clearInterval(game);
                 setTimeout(() => {
-                    alert(`游戏结束！你的得分是: ${score}\n\n🐍 小蛇说: "我还要吃更多水果!"`);
+                    alert(`Game Over! Your score is: ${score}\n\n🐍 Snake says: "I want to eat more fruits!"`);
                     resetGame();
                 }, 100);
             }
@@ -329,8 +329,8 @@
             gameStarted = false;
             isPaused = false;
             drawGame();
-            startBtn.textContent = "开始游戏";
-            pauseBtn.textContent = "暂停游戏";
+            startBtn.textContent = "Start Game";
+            pauseBtn.textContent = "Pause Game";
         }
 
         // 键盘控制
@@ -367,7 +367,7 @@
             if (!gameStarted) return;
 
             isPaused = !isPaused;
-            pauseBtn.textContent = isPaused ? "继续游戏" : "暂停游戏";
+            pauseBtn.textContent = isPaused ? "Resume Game" : "Pause Game";
             document.querySelector('.snake-emoji').style.animation = isPaused ? 'none' : 'bounce 0.5s infinite alternate';
         });
 
